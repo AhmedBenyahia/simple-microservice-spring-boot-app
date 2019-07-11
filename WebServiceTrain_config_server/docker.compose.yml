@@ -1,0 +1,41 @@
+version: '2.2'
+services:
+    configserver:
+        container_name: configserver
+        build:
+            context: ./configserver/configserver/src/main/docker
+            dockerfile: Dockerfile
+        image: configserver:latest
+        expose:
+            - 8888
+        ports:
+            - 8888:8888
+        networks:
+            - emp-network
+        volumes:
+            - config-repo:/var/lib/config-repo
+        healthcheck:
+            test: "exit 0"
+
+    rest-microservice-store:
+        container_name: rest-microservice-store
+        build:
+            context: ./simpleclient/customers-stores/rest-microservices-store/src/main/docker
+            dockerfile: Dockerfile
+        image: eureka-server:latest
+        expose:
+            - 8081
+        ports:
+            - 8081:8081
+        networks:
+            - emp-network
+        depends_on:
+              configserver:
+                 condition: service_healthy
+
+networks:
+    emp-network:
+        driver: bridge
+volumes:
+    config-repo:
+        external: true
